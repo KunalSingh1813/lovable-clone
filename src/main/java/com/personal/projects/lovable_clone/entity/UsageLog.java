@@ -5,18 +5,21 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
+
 @FieldDefaults(level= AccessLevel.PRIVATE) //We can get rid of all private declerations
 @Getter
 @Setter
-public class Plan {
+public class UsageLog {
     Long id;
-    String name;
+    User user;
+    Project project;
+    String action;
 
-    String stripePriceId;
-    Integer maxProjects;
-    Integer maxTokensPerDay;
-    Integer maxPreviews; //max no. of previews allowed per plan
-    Boolean unlimitedAI; //unlimited access to LLM, ignore maxTokensPerDay if true
-    Boolean active;
+    Integer tokensUsed;
+    Integer durationMs;
 
+    String metaData; //JSON of{model_used , prompt_used}
+
+    Instant createdAt;
 }

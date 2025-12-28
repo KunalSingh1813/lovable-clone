@@ -25,6 +25,6 @@ public class User {
     //LocalDateTime createdAt;
     Instant createdAt;
     Instant UpdatedAt;
-    Instant deletedAt;
+    Instant deletedAt;  //soft delete
 
 }
