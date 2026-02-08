@@ -15,14 +15,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects/{projectId}/members")
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class ProjectMemberController {
 
     private final ProjectMemberService projectMemberService; //Constructor Dependency Injection
 
+    public ProjectMemberController(ProjectMemberService projectMemberService) {
+        this.projectMemberService = projectMemberService;
+    }
+
     //API to get all members
     @GetMapping
-    public ResponseEntity<List<ProjectMember>> getProjectMembers(@PathVariable Long projectId){
+    public ResponseEntity<List<MemberResponse>> getProjectMembers(@PathVariable Long projectId){
         Long userId =1L;
         return ResponseEntity.ok(projectMemberService.getProjectMembers(projectId, userId));
     }
@@ -50,7 +54,7 @@ public class ProjectMemberController {
     }
 
     @DeleteMapping("/{memberId}")
-    public ResponseEntity<MemberResponse> updateMemberRole(
+    public ResponseEntity<MemberResponse> deleteMember(
             @PathVariable Long projectId,
             @PathVariable Long memberId
     ){

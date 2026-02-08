@@ -15,10 +15,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects/{projectId}/files")
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class FileController {
     private final FileService fileService;
 
+    public FileController(FileService fileService){
+        this.fileService = fileService;
+    }
     @GetMapping
     public ResponseEntity<List<FileNode>> getFileTree(@PathVariable Long projectId){
         Long userId = 1L;
