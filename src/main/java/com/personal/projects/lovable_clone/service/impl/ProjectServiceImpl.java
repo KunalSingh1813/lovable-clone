@@ -3,25 +3,56 @@ package com.personal.projects.lovable_clone.service.impl;
 import com.personal.projects.lovable_clone.dto.project.ProjectRequest;
 import com.personal.projects.lovable_clone.dto.project.ProjectResponse;
 import com.personal.projects.lovable_clone.dto.project.ProjectSummaryResponse;
+import com.personal.projects.lovable_clone.entity.Project;
+import com.personal.projects.lovable_clone.entity.User;
+import com.personal.projects.lovable_clone.mapper.ProjectMapper;
+import com.personal.projects.lovable_clone.repository.ProjectRepository;
+import com.personal.projects.lovable_clone.repository.UserRepository;
 import com.personal.projects.lovable_clone.service.ProjectService;
+import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+
+@Transactional
 public class ProjectServiceImpl implements ProjectService {
+
+    ProjectRepository projectRepository;
+    UserRepository userRepository;
+    ProjectMapper projectMapper;
+    @Override
+    public ProjectResponse createProject(ProjectRequest request, Long userId) {
+    User owner = userRepository.findById(userId).orElseThrow();
+        Project project = Project.builder()
+                .name(request.name())
+                .owner(owner)
+                .isPublic(false)
+                .build();
+        project = projectRepository.save(project);
+        return projectMapper.toProjectResponse(project);
+    }
+
     @Override
     public List<ProjectSummaryResponse> getUserProjects(Long userId) {
-        return null;
+//        return projectRepository.findAllAccessibleByUser(userId)
+//                .stream()
+//                .map(projectMapper::toProjectSummaryResponse)
+//                .collect(Collectors.toList());
+    var projects = projectRepository.findAllAccessibleByUser(userId);
+    return projectMapper.toListOfProjectSummaryResponse(projects);
     }
 
     @Override
     public ProjectResponse getUserProjectById(Long id, Long userId) {
-        return null;
-    }
-
-    @Override
-    public ProjectResponse createProject(ProjectRequest request, Long userId) {
         return null;
     }
 
