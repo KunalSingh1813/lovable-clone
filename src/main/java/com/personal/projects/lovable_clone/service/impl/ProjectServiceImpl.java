@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,16 +54,34 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse getUserProjectById(Long id, Long userId) {
-        return null;
+        Project project = projectRepository.findAccessibleProjectById(id, userId).orElseThrow();
+        return projectMapper.toProjectResponse(project);
     }
 
     @Override
     public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
-        return null;
+       // Project project = projectRepository.findAccessibleProjectById(id, userId).orElseThrow();
+        Project  project = getAccessibleProjectById(id,userId);
+        project.setName(request.name());
+        project = projectRepository.save(project);
+        
+        return projectMapper.toProjectResponse(project);
     }
 
     @Override
     public void softDelete(Long id, Long userId) {
+        Project  project = getAccessibleProjectById(id,userId);
+        if(!project.getOwner().getId().equals(userId)){
+            throw new RuntimeException("You are now allowed to delete");
+        }
+        project.setDeletedAt(Instant.now());
+        projectRepository.save(project);
+    }
 
+
+    ///INTERNAL FUNCTION
+    public Project getAccessibleProjectById(Long projectId, Long userId)
+    {
+        return projectRepository.findAccessibleProjectById(projectId,userId).orElseThrow();
     }
 }
