@@ -62,6 +62,11 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
        // Project project = projectRepository.findAccessibleProjectById(id, userId).orElseThrow();
         Project  project = getAccessibleProjectById(id,userId);
+
+        if(!project.getOwner().getId().equals(userId)){
+            throw new RuntimeException("You are not allowed to update the name");
+        }
+
         project.setName(request.name());
         project = projectRepository.save(project);
         
@@ -72,7 +77,7 @@ public class ProjectServiceImpl implements ProjectService {
     public void softDelete(Long id, Long userId) {
         Project  project = getAccessibleProjectById(id,userId);
         if(!project.getOwner().getId().equals(userId)){
-            throw new RuntimeException("You are now allowed to delete");
+            throw new RuntimeException("You are not allowed to delete");
         }
         project.setDeletedAt(Instant.now());
         projectRepository.save(project);
