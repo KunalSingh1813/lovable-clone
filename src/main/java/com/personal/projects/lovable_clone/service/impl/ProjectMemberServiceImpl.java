@@ -36,13 +36,10 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public List<MemberResponse> getProjectMembers(Long projectId, Long userId) {
         Project project = getAccessibleProjectById(projectId,userId);
 
-        List<MemberResponse> memberResponseList = new ArrayList<>();
-        memberResponseList.add(projectMemberMapper.toProjectMemberResponseFromOwner(project.getOwner()));
-
-        memberResponseList.addAll(projectMemberRepository.findByIdProjectId(projectId)
+        List<MemberResponse> memberResponseList = projectMemberRepository.findByIdProjectId(projectId)
                 .stream()
                 .map(projectMemberMapper::toProjectMemberResponseFromMember)
-                .toList());
+                .toList();
 
         return memberResponseList;
     }
@@ -51,11 +48,8 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public MemberResponse inviteMember(Long projectId, InviteMemberRequest request, Long userId) {
         Project project = getAccessibleProjectById(projectId, userId);
 
-        if(!project.getOwner().getId().equals(userId)){
-            throw new RuntimeException("not allowed");
-        }
 
-        User invitee = userRepository.findByEmail(request.email()).orElseThrow();
+        User invitee = userRepository.findByUsername(request.username()).orElseThrow();
 
         if(invitee.getId().equals(userId)){
             throw new RuntimeException("Cannot invite yourself");
@@ -82,9 +76,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request, Long userId) {
         Project project = getAccessibleProjectById(projectId, userId);
 
-        if(!project.getOwner().getId().equals(userId)){
-            throw new RuntimeException("not allowed");
-        }
 
         Long userIdToUpdate = memberId;
 
@@ -105,10 +96,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public void removeProjectMember(Long projectId, Long memberId, Long userId) {
         Project project = getAccessibleProjectById(projectId, userId);
-
-        if(!project.getOwner().getId().equals(userId)){
-            throw new RuntimeException("Not allowed");
-        }
 
         boolean exists = projectMemberRepository
                 .existsByProjectIdAndUserId(projectId, memberId);

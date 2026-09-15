@@ -5,11 +5,12 @@ import jakarta.persistence.Embeddable;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@FieldDefaults(level= AccessLevel.PRIVATE) //We can get rid of all private declerations
+@FieldDefaults(level= AccessLevel.PRIVATE)
 @Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode
 public class ProjectMemberId {
     @Column(name = "project_id")
@@ -17,7 +18,4 @@ public class ProjectMemberId {
 
     @Column(name = "user_id")
     private Long userId;
-
-    public ProjectMemberId(Long projectId, Long id) {
-    }
 }
