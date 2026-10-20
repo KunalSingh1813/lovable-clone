@@ -13,6 +13,7 @@ import com.personal.projects.lovable_clone.mapper.ProjectMapper;
 import com.personal.projects.lovable_clone.repository.ProjectMemberRepository;
 import com.personal.projects.lovable_clone.repository.ProjectRepository;
 import com.personal.projects.lovable_clone.repository.UserRepository;
+import com.personal.projects.lovable_clone.security.AuthUtil;
 import com.personal.projects.lovable_clone.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -36,12 +37,16 @@ public class ProjectServiceImpl implements ProjectService {
     UserRepository userRepository;
     ProjectMapper projectMapper;
     ProjectMemberRepository projectMemberRepository;
+    AuthUtil authutil;
     @Override
-    public ProjectResponse createProject(ProjectRequest request, Long userId) {
-        User owner = userRepository.findById(userId).orElseThrow(
-                () -> new ResourceNotFoundException("User", userId.toString())
-        );
-
+    public ProjectResponse createProject(ProjectRequest request) {
+        Long userId = authutil.getCurrentUserId();
+        //this will make a DB call
+//        User owner = userRepository.findById(userId).orElseThrow(
+//                () -> new ResourceNotFoundException("User", userId.toString())
+//        );
+        //This will not make a databse call
+        User owner = userRepository.getReferenceById(userId); //Creates a Hibernate Proxy object. use withing Transactional context.
         Project project = Project.builder()
                 .name(request.name())
                 .isPublic(false)
@@ -67,26 +72,25 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<ProjectSummaryResponse> getUserProjects(Long userId) {
-//        return projectRepository.findAllAccessibleByUser(userId)
-//                .stream()
-//                .map(projectMapper::toProjectSummaryResponse)
-//                .collect(Collectors.toList());
+    public List<ProjectSummaryResponse> getUserProjects() {
+        Long userId = authutil.getCurrentUserId();
     var projects = projectRepository.findAllAccessibleByUser(userId);
     return projectMapper.toListOfProjectSummaryResponse(projects);
     }
 
     @Override
-    public ProjectResponse getUserProjectById(Long id, Long userId) {
+    public ProjectResponse getUserProjectById(Long id) {
+        Long userId = authutil.getCurrentUserId();
         Project project = projectRepository.findAccessibleProjectById(id, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", id.toString()));
         return projectMapper.toProjectResponse(project);
     }
 
     @Override
-    public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
+    public ProjectResponse updateProject(Long id, ProjectRequest request) {
        // Project project = projectRepository.findAccessibleProjectById(id, userId).orElseThrow();
-        Project  project = getAccessibleProjectById(id,userId);
+        Long userId = authutil.getCurrentUserId();
+        Project  project = getAccessibleProjectById(id);
 
         project.setName(request.name());
         project = projectRepository.save(project);
@@ -95,8 +99,9 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void softDelete(Long id, Long userId) {
-        Project  project = getAccessibleProjectById(id,userId);
+    public void softDelete(Long id) {
+        Long userId = authutil.getCurrentUserId();
+        Project  project = getAccessibleProjectById(id);
 //        if(!project.getOwner().getId().equals(userId)){
 //            throw new RuntimeException("You are not allowed to delete");
 //        }
@@ -106,8 +111,9 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     ///INTERNAL FUNCTION
-    public Project getAccessibleProjectById(Long projectId, Long userId)
+    public Project getAccessibleProjectById(Long projectId)
     {
+        Long userId = authutil.getCurrentUserId();
         return projectRepository.findAccessibleProjectById(projectId,userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project",projectId.toString()));
     }
